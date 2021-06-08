@@ -1164,4 +1164,6 @@
     <string name="qhybrid_title_apps_management">Apps management</string>
     <string name="qhybrid_title_calibration">Calibration</string>
     <string name="fossil_hr_warning_firmware_too_new">Some functions are disabled because the firmware of the watch is too new</string>
+    <string name="jarak_yang_ditempuh">Jarak yang ditempuh: %1$s km</string>
+    <string name="kecepatan">Kecepatan: %1$s km per jam</string>
 </resources>

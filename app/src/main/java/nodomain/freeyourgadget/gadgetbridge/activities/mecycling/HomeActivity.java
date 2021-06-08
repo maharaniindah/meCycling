@@ -9,6 +9,8 @@ import androidx.annotation.Nullable;
 import nodomain.freeyourgadget.gadgetbridge.R;
 import nodomain.freeyourgadget.gadgetbridge.activities.base.BaseActivity;
 
+import static nodomain.freeyourgadget.gadgetbridge.activities.mecycling.MapActivity.userLocation;
+
 public class HomeActivity extends BaseActivity {
 
     Button btnStart;
@@ -21,6 +23,10 @@ public class HomeActivity extends BaseActivity {
         setContentView(R.layout.activity_home);
         initLayout();
         initListener();
+        pref.edit()
+                .remove(userLocation)
+                .remove("alarm")
+                .apply();
     }
 
     private void initLayout(){
