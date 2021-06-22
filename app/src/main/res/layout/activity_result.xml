@@ -1,23 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-<!--    <TextView-->
-<!--        android:id="@+id/textView5"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="Jarak: %1$s km"-->
-<!--        tools:layout_editor_absoluteX="54dp"-->
-<!--        tools:layout_editor_absoluteY="51dp" />-->
+    <TextView
+        android:id="@+id/tv_result_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="32dp"
+        android:text="@string/distance_placehorder"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+         />
 
-<!--    <TextView-->
-<!--        android:id="@+id/textView6"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="Kecepatan Rata-rata: %1$s km per jam"-->
-<!--        tools:layout_editor_absoluteX="66dp"-->
-<!--        tools:layout_editor_absoluteY="108dp" />-->
+    <com.jjoe64.graphview.GraphView
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:id="@+id/graph"
+        android:layout_marginTop="100dp"
+        app:layout_constraintStart_toStartOf="@+id/tv_calorie_need"
+        app:layout_constraintTop_toTopOf="@+id/tv_calorie_need" />
+
+    <TextView
+        android:id="@+id/tv_result_speed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/speed_placehorder"
+        android:textSize="20sp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="@+id/tv_result_distance"
+        app:layout_constraintTop_toBottomOf="@+id/tv_result_distance" />
+
+    <TextView
+        android:id="@+id/tv_calorie_burn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/cal_burn_placehorder"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="@+id/tv_result_speed"
+        app:layout_constraintTop_toBottomOf="@+id/tv_result_speed" />
+
+    <TextView
+        android:id="@+id/tv_calorie_need"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/cal_need_placehorder"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="@+id/tv_calorie_burn"
+        app:layout_constraintTop_toBottomOf="@+id/tv_calorie_burn" />
+
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

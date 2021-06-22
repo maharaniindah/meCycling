@@ -8,15 +8,25 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
 import nodomain.freeyourgadget.gadgetbridge.R;
 import nodomain.freeyourgadget.gadgetbridge.activities.base.BaseActivity;
 
 public class ProfileActivity extends BaseActivity {
 
-    private static final String userHeight = "userHeight";
-    private static final String userWeight = "userWeight";
-    private static final String userGender = "userGender";
-    private static final String userBirthYear = "userBirthYear";
+    public static final String userHeight = "userHeight";
+    public static final String userWeight = "userWeight";
+    public static final String userGender = "userGender";
+    public static final String userBirthYear = "userBirthYear";
+
+    public static final int MALE_CODE = 1;
+    public static final int FEMALE_CODE = 2;
 
     EditText etHeight;
     EditText etWeight;
@@ -46,7 +56,7 @@ public class ProfileActivity extends BaseActivity {
     private void initData(){
         int height = pref.getInt(userHeight, 0);
         int weight = pref.getInt(userWeight, 0);
-        int gender = pref.getInt(userHeight, -1);
+        int gender = pref.getInt(userGender, -1);
         int year = pref.getInt(userBirthYear, 0);
 
         if(height > 0){
@@ -58,23 +68,47 @@ public class ProfileActivity extends BaseActivity {
         if(year > 0){
             etBirthDate.setText(String.valueOf(year));
         }
-        if(gender == 1){
+        if(gender == MALE_CODE){
             rbMale.setChecked(true);
         }
-        if(gender == 0){
+        if(gender == FEMALE_CODE){
             rbFemale.setChecked(true);
         }
 
     }
     private void initListener(){
         btnSave.setOnClickListener(v->{
+
+//            boolean isSuccessParseDate = false;
+//            DateFormat format = new SimpleDateFormat("dd-MM-yyyy", new Locale("id", "ID"));
+//            try{
+//                String userBirthDate = etBirthDate.getText().toString().trim();
+//                Date date = format.parse(userBirthDate);
+//                Calendar cal = Calendar.getInstance();
+//                isSuccessParseDate = false;
+//                if(date != null){
+//                    cal.setTime(date);
+//                    int year = cal.get(Calendar.YEAR);
+//                    isSuccessParseDate = true;
+//                }
+//                System.out.println("success parsing date");
+//            } catch (ParseException e){
+//                System.out.println("fail parsing date");
+//                isSuccessParseDate = false;
+//            }
+//            if(!isSuccessParseDate){
+//                String msg = "Pastikan format tanggal lahir dd-MM-yyyy";
+//                Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+//                return;
+//            }
+
             String heightStr = etHeight.getText().toString().trim().replace("cm", "");
             int height = 0;
             if(!heightStr.isEmpty()){
-                height = Integer.parseInt(etHeight.getText().toString().trim());
+                height = Integer.parseInt(heightStr);
             }
 
-            String weightStr = etWeight.getText().toString().trim().replace("cm", "");
+            String weightStr = etWeight.getText().toString().trim().replace("kg", "");
             int weight = 0;
             if(!weightStr.isEmpty()){
                 weight = Integer.parseInt(weightStr);
@@ -92,7 +126,7 @@ public class ProfileActivity extends BaseActivity {
             if(isMaleChecked){
                 userGenderMale = 1;
             }else if(isFemaleChecked){
-                userGenderMale = 0;
+                userGenderMale = 2;
             }else{
                 Toast.makeText(this, "isi data jenis kelamin", Toast.LENGTH_LONG).show();
                 return;

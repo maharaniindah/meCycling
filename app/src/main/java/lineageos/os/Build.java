@@ -18,6 +18,7 @@ package lineageos.os;
 
 
 public class Build {
+
     public static class LINEAGE_VERSION_CODES {
         public static final int APRICOT = 1;
         public static final int BOYSENBERRY = 2;

@@ -24,6 +24,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -63,6 +64,7 @@ import nodomain.freeyourgadget.gadgetbridge.GBApplication;
 import nodomain.freeyourgadget.gadgetbridge.R;
 import nodomain.freeyourgadget.gadgetbridge.activities.mecycling.HomeActivity;
 import nodomain.freeyourgadget.gadgetbridge.activities.mecycling.LoginActivity;
+import nodomain.freeyourgadget.gadgetbridge.activities.mecycling.util.Helpers;
 import nodomain.freeyourgadget.gadgetbridge.adapter.GBDeviceAdapterv2;
 import nodomain.freeyourgadget.gadgetbridge.devices.DeviceManager;
 import nodomain.freeyourgadget.gadgetbridge.impl.GBDevice;
@@ -75,6 +77,7 @@ public class ControlCenterv2 extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GBActivity {
 
     public static final int MENU_REFRESH_CODE = 1;
+    public static final String connectedDeviceTag = "connectedDevice";
     private static PhoneStateListener fakeStateListener;
 
     //needed for KK compatibility
@@ -338,17 +341,19 @@ public class ControlCenterv2 extends AppCompatActivity
 
     private void refreshPairedDevices() {
         mGBDeviceAdapter.notifyDataSetChanged();
-        //checkAnyConnectedDevice();
-        goToHomeActivity();
+        checkAnyConnectedDevice();
     }
 
     private void checkAnyConnectedDevice(){
         for(int i = 0; i<deviceList.size(); i++){
             if(deviceList.get(i).isConnected()){
-
+                SharedPreferences pref = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+                pref.edit().putString(connectedDeviceTag, deviceList.get(i).toString());
+                goToHomeActivity();
                 break;
             }
         }
+        Helpers.showAlertDeviceDisconnected();
     }
 
     private void goToHomeActivity(){

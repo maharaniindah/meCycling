@@ -20,6 +20,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -30,6 +31,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -38,26 +40,40 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import nodomain.freeyourgadget.gadgetbridge.GBApplication;
 import nodomain.freeyourgadget.gadgetbridge.R;
 import nodomain.freeyourgadget.gadgetbridge.activities.base.BaseActivity;
 import nodomain.freeyourgadget.gadgetbridge.activities.mecycling.model.Distance;
+import nodomain.freeyourgadget.gadgetbridge.activities.mecycling.model.Speed;
 import nodomain.freeyourgadget.gadgetbridge.activities.mecycling.model.UserLocation;
 import nodomain.freeyourgadget.gadgetbridge.activities.mecycling.util.Helpers;
+import nodomain.freeyourgadget.gadgetbridge.model.ActivitySample;
+import nodomain.freeyourgadget.gadgetbridge.model.DeviceService;
+
+import static nodomain.freeyourgadget.gadgetbridge.activities.mecycling.ProfileActivity.userWeight;
 
 public class MapActivity extends BaseActivity implements OnMapReadyCallback {
 
     public static final String userLocation = "userLocation";
     public static final String userDistances = "userDistances";
     public static final String userSpeeds = "userSpeeds";
+    public static final String isUserCycling = "isUserCycling";
 
     private Polyline mutablePolyline;
     private FusedLocationProviderClient fusedLocationClient;
     private GoogleMap googleMap;
     private Timer timer;
+    private Timer timerHeartRate;
     private TextView textDistanceUser;
     private TextView textSpeedUser;
     private Button btnStop;
 
+    private double distance = 0;
+    private double speedAvg = 0;
+    private int BB = 0;
+    private double EC = 0;
+    private double calNeeds = 0;
+    private int duration = 0;
 
     public void startTimer(){
         System.out.println("timer startd");
@@ -69,6 +85,7 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback {
         timer.scheduleAtFixedRate(new TimerTask(){
             @Override
             public void run() {
+
                 getMyLocationUpdate();
             }
         }, 0, 2000);
@@ -82,10 +99,49 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback {
         timer = null;
     }
 
+    private void stopTimerHeartRate(){
+        if(timerHeartRate==null){
+            return;
+        }
+        timerHeartRate.cancel();
+        timerHeartRate = null;
+    }
+
+    public void startTimerHeartRate() { //timer buat scan heart rate
+        if(timerHeartRate != null){
+            return;
+        }
+        timerHeartRate = new Timer();
+        timerHeartRate.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                GBApplication.deviceService().onHeartRateTest();
+            }
+        }, 0,60*1000); //datanya diambil tiap menit
+    }
+
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() { //buat ngambil data detak jantung
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if(DeviceService.ACTION_REALTIME_SAMPLES.equals(action)) {
+                Serializable message = intent.getSerializableExtra(DeviceService.EXTRA_REALTIME_SAMPLE);
+                if (message instanceof ActivitySample) {
+                    ActivitySample sample = (ActivitySample) message;
+                    String msg = "heart rate: " + sample.getHeartRate();
+                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                    if(sample.getHeartRate() > Helpers.calculateMaxHeartRate(pref)){
+                        Helpers.showNotification(getApplicationContext());
+                    }
+                }
+            }
+        }
+    };
     @Override
     protected void onStop() {
         super.onStop();
         stop();
+        startTimerHeartRate();
     }
 
     @Override
@@ -97,6 +153,7 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback {
     protected void onResume() {
         super.onResume();
         startTimer();
+        startTimerHeartRate();
     }
 
     @SuppressLint("MissingPermission")
@@ -105,7 +162,7 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback {
         System.out.println("getting location");
         Set<String> locs = pref.getStringSet(userLocation, new HashSet<>());
         List<UserLocation> userLocs = new ArrayList<>();
-        String[] locsArr = locs.toArray(new String[locs.size()]);
+        String[] locsArr = locs.toArray(new String[0]);
         for (int i = 0; i < locsArr.length; i++) {
             userLocs.add(new UserLocation(locsArr[i]));
         }
@@ -128,6 +185,7 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback {
             distances = new HashSet<>(pref.getStringSet(userDistances, new HashSet<>()));
             String value = dist + ";" + (distances.size()+1);
             distances.add(value);
+            System.out.println("size dits "+distances.size()+" val: "+dist);
 
             Set<String> speedUser = new HashSet<>(pref.getStringSet(userDistances, new HashSet<>()));
             String valueSpeed = speed + ";" + (speedUser.size()+1);
@@ -136,9 +194,35 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback {
                     .putStringSet(userDistances, distances)
                     .putStringSet(userSpeeds, speedUser)
                     .apply();
+
+            if(!speedUser.isEmpty()){
+                String[] speedArr = speedUser.toArray(new String[0]);
+                List<Speed> speedList = new ArrayList<>();
+                double sumSpeed = 0;
+                for (String s : speedArr) {
+                    speedList.add(new Speed(s));
+                    sumSpeed += speedList.get(speedList.size() - 1).speed;
+                }
+                speedAvg = sumSpeed / speedList.size();
+                int MET;
+                if(speedAvg < 16){
+                    MET = 4;
+                } else if (speedAvg <= 19){
+                    MET = 6;
+                } else if (speedAvg <= 22){
+                    MET = 8;
+                }else if (speedAvg <= 26){
+                    MET = 10;
+                }else if (speedAvg <= 30){
+                    MET = 12;
+                } else {
+                    MET = 14;
+                }
+                EC = ((MET * 7.7 * (BB * 2.2))/200) * (duration/60.0);
+            }
         }
         double distanceUser = 0;
-        if(distances.isEmpty()){
+        if(!distances.isEmpty()){
             String[] distArr = distances.toArray(new String[0]);
             List<Distance> distanceList = new ArrayList<>();
             for(int i = 0; i<distArr.length; i++){
@@ -147,12 +231,16 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback {
             }
         }
         System.out.println("got size: " + userLocs.size());
+        System.out.println("distance : " + distanceUser);
+
 
         double finalDistanceUser = distanceUser;
+        this.distance = distanceUser;
         double finalSpeed = speed;
         runOnUiThread(() -> {
             mutablePolyline.setPoints(latLngs);
             String distanceString = String.valueOf(finalDistanceUser);
+            //TextView textDistanceUser = findViewById(R.id.tv_map_user_distance);
             distanceString = reduceDecimal(distanceString);
             String textLabel = getString(R.string.jarak_yang_ditempuh, distanceString);
             textDistanceUser.setText(textLabel);
@@ -185,11 +273,19 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback {
         }
         return input;
     }
+
+    private void setupHeartRateHanlder(){
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(DeviceService.ACTION_REALTIME_SAMPLES);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, filter);
+    }
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         System.out.println("test oncreate");
+        setupHeartRateHanlder();
+        BB = pref.getInt(userWeight, 0);
         textDistanceUser = findViewById(R.id.tv_map_user_distance);
         textSpeedUser = findViewById(R.id.tv_map_user_speed);
         btnStop = findViewById(R.id.btn_map_stop);
@@ -203,7 +299,16 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback {
             Toast.makeText(this, "got null map", Toast.LENGTH_LONG).show();
         }
         btnStop.setOnClickListener(v ->{
-
+            calNeeds = Helpers.calculateCaloriesNeed(pref);
+            System.out.println("duration: "+duration);
+            pref.edit().putBoolean(isUserCycling, false).apply();
+            Intent intent = new Intent(this, ResultActivity.class);
+            intent.putExtra("distance", reduceDecimal(String.valueOf(distance)));
+            intent.putExtra("speed", reduceDecimal(String.valueOf(speedAvg)));
+            intent.putExtra("cal_burn", reduceDecimal(String.valueOf(EC)));
+            intent.putExtra("cal_need", reduceDecimal(String.valueOf(calNeeds)));
+            startActivity(intent);
+            finish();
         });
         //mapFragment.getMapAsync(this);
 
@@ -252,6 +357,12 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback {
         boolean isAlarmRunning = pref.getBoolean("alarm",false);
         if(!isAlarmRunning) {
             setAlarm(this);
+            new Timer().scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    duration += 1;
+                }
+            }, 0, 1000);
             pref.edit().putBoolean("alarm",true).apply();
         }
     }
@@ -282,12 +393,15 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback {
             @SuppressLint("MissingPermission")
             @Override
             public void onReceive(Context context, Intent intent) {
+                System.out.println("onreceiive");
                 context.unregisterReceiver(this);
                 SharedPreferences pref = activity.getSharedPreferences(activity.getString(R.string.app_name),activity.MODE_PRIVATE);
                 int prevCounter = 0;
                 prevCounter = pref.getInt("counter",0);
                 prevCounter++;
                 pref.edit().putInt("counter",prevCounter).apply();
+                System.out.println("on receive pre location. counter: "+prevCounter);
+                boolean isUserCyclingStatus = pref.getBoolean(isUserCycling, false);
                 LocationServices.getFusedLocationProviderClient(activity).getLastLocation().addOnSuccessListener(activity, location -> {
                     if(location != null) {
                         Set<String> userLocs = new HashSet<>(pref.getStringSet(userLocation, new HashSet<>()));
@@ -297,12 +411,12 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback {
                         System.out.println("test loc: "+latlngUser);
                         userLocs.add(latlngUser);
                         pref.edit().putStringSet(userLocation, userLocs).apply();
+                    } else {
+                        System.out.println("got null location");
                     }
                 });
-                if(prevCounter < 1000) {
+                if(isUserCyclingStatus) {
                     setAlarm(activity);
-                } else {
-                    pref.edit().putBoolean("alarm",false).apply();
                 }
             }
 
@@ -316,4 +430,9 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback {
         manager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 1000*2, pintent);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+    }
 }

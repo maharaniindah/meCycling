@@ -65,4 +65,10 @@
         <item tools:targetApi="21" name="android:navigationBarColor">@color/primarydark_dark</item>
         <item name="android:windowBackground">@drawable/splash</item>
     </style>
+
+    <style name="Font">
+        <item name="android:fontFamily">@font/courgette</item>
+        <item name="fontFamily">@font/courgette</item>
+        <item name="android:textStyle">normal</item>
+    </style>
 </resources>

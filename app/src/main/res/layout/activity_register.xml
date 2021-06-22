@@ -12,9 +12,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_margin="20dp"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:hint="email"
         android:inputType="textEmailAddress"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:background="@drawable/custom_input"
+        android:drawableStart="@drawable/ic_lock"
+        android:drawablePadding="12dp"
         />
 
     <EditText
@@ -24,9 +29,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_margin="20dp"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:hint="password"
-        android:inputType="textPassword"/>
+        android:inputType="textPassword"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:background="@drawable/custom_input"
+        android:drawableStart="@drawable/ic_lock"
+        android:drawablePadding="12dp"/>
 
     <Button
         android:id="@+id/btn_register"
@@ -36,7 +46,8 @@
         android:layout_marginTop="20dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Register"/>
+        android:text="Register"
+        />
 
     <TextView
         android:id="@+id/tv_register_toLogin"
@@ -45,7 +56,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sudah punya Akun?"
+        android:text="Do you have an account? Sign In"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

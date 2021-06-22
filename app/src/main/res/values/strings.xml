@@ -1166,4 +1166,8 @@
     <string name="fossil_hr_warning_firmware_too_new">Some functions are disabled because the firmware of the watch is too new</string>
     <string name="jarak_yang_ditempuh">Jarak yang ditempuh: %1$s km</string>
     <string name="kecepatan">Kecepatan: %1$s km per jam</string>
+    <string name="cal_need_placehorder">Kebutuhan kalori: %1$s cal </string>
+    <string name="cal_burn_placehorder">Kalori terbakar: %1$s cal</string>
+    <string name="distance_placehorder">Jarak: %1$s km</string>
+    <string name="speed_placehorder">Kecepatan Rata-rata: %1$s km per jam</string>
 </resources>

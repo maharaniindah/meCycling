@@ -6,6 +6,7 @@ public class Distance implements Comparable<Distance>{
     public int order;
 
     public Distance(String input){
+        System.out.println("dist masuk: "+input);
         String[] split = input.split(";");
         if (split.length == 2){
             distance = Double.parseDouble(split[0]);

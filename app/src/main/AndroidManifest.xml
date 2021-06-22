@@ -72,13 +72,7 @@
         android:theme="@style/GadgetbridgeTheme">
 
         <activity android:name=".activities.mecycling.LoginActivity" >
-        <intent-filter>
-            <category android:name="android.intent.category.DEFAULT" />
 
-            <action android:name="android.intent.action.MAIN" />
-
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
         </activity>
 
         <activity
@@ -86,6 +80,13 @@
             android:label="@string/title_activity_controlcenter"
             android:theme="@style/SplashTheme"
             android:launchMode="singleTop">
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
 
         </activity>
         <activity
@@ -425,7 +426,9 @@
             android:label="@string/title_activity_debug"
             android:parentActivityName=".activities.ControlCenterv2"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden" />
+            android:windowSoftInputMode="stateHidden" >
+
+        </activity>
         <activity
             android:name=".activities.AboutActivity"
             android:label="@string/about_activity_title"
@@ -616,6 +619,7 @@
         <activity android:name=".activities.mecycling.RegisterActivity"/>
         <activity android:name=".activities.mecycling.HomeActivity"/>
         <activity android:name=".activities.mecycling.ProfileActivity"/>
+        <activity android:name=".activities.mecycling.ResultActivity" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

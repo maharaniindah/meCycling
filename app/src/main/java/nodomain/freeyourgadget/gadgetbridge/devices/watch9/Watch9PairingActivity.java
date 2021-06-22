@@ -41,6 +41,7 @@ import nodomain.freeyourgadget.gadgetbridge.util.AndroidUtils;
 import nodomain.freeyourgadget.gadgetbridge.util.BondingInterface;
 import nodomain.freeyourgadget.gadgetbridge.util.BondingUtil;
 
+import static nodomain.freeyourgadget.gadgetbridge.activities.mecycling.ProfileActivity.userWeight;
 import static nodomain.freeyourgadget.gadgetbridge.util.BondingUtil.STATE_DEVICE_CANDIDATE;
 
 public class Watch9PairingActivity extends AbstractGBActivity implements BondingInterface {
@@ -54,7 +55,6 @@ public class Watch9PairingActivity extends AbstractGBActivity implements Bonding
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_watch9_pairing);
-
         message = findViewById(R.id.watch9_pair_message);
 
         deviceCandidate = getIntent().getParcelableExtra(DeviceCoordinator.EXTRA_DEVICE_CANDIDATE);
